@@ -1,5 +1,7 @@
+// Functions for managing songs and verses.
+
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 // Add a song.
@@ -20,7 +22,7 @@ export const add = mutation({
 });
 
 // Get a batch of verses that don't yet have embeddings.
-export const getUnembeddedBatch = query({
+export const getUnembeddedBatch = internalQuery({
   args: {
     limit: v.float64(),
   },
@@ -37,7 +39,7 @@ export const getUnembeddedBatch = query({
 });
 
 // Store embeddings for a batch of verses.
-export const addEmbedding = mutation({
+export const addEmbedding = internalMutation({
   args: {
     batch: v.array(
       v.object({ id: v.id("verses"), embedding: v.array(v.float64()) })
@@ -46,20 +48,6 @@ export const addEmbedding = mutation({
   handler: async (ctx, args) => {
     for (const verse of args.batch) {
       await ctx.db.patch(verse.id, { embedding: verse.embedding });
-    }
-  },
-});
-
-// Clear all state.
-export const clearAll = internalMutation({
-  handler: async (ctx) => {
-    const limit = 100;
-    const songBatch = await ctx.db.query("songs").take(limit);
-    await Promise.all(songBatch.map((song) => ctx.db.delete(song._id)));
-    const verseBatch = await ctx.db.query("verses").take(limit);
-    await Promise.all(verseBatch.map((verse) => ctx.db.delete(verse._id)));
-    if (songBatch.length === limit || verseBatch.length === limit) {
-      await ctx.scheduler.runAfter(0, internal.songs.clearAll, {});
     }
   },
 });

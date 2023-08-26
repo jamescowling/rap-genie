@@ -3,7 +3,7 @@ import { api } from "../convex/_generated/api";
 import { useState } from "react";
 
 function App() {
-  const search = useAction(api.ai.search);
+  const search = useAction(api.search.search);
   const [searchText, setSearchText] = useState("");
   const [verses, setVerses] = useState<
     { title: string; artist: string; verse: string }[]
@@ -11,7 +11,7 @@ function App() {
 
   const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    search({ text: searchText }).then(setVerses);
+    search({ text: searchText, count: 3 }).then(setVerses);
     setSearchText("");
   };
 
