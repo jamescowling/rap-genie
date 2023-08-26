@@ -1,0 +1,60 @@
+body {
+  margin: 2rem;
+  background: black url('genie.png') no-repeat bottom right fixed;
+  background-size: auto 100vh;
+  color: lightgray;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+h1 {
+  font-size: 4rem;
+  font-family: 'Fruktur', cursive;
+  margin-bottom: 0;
+}
+
+.byline {
+  font-size: 1.5rem;
+  letter-spacing: .16rem;
+  margin-bottom: 3rem;
+}
+
+.search {
+  font-size: 1.4rem;
+  width: 500px;
+  margin-bottom: 3.5rem;
+  color: lightgray;
+  background-color: rgba(255,255,255,0.1);
+}
+
+.submit {
+  display: none;
+}
+
+.song {
+  border: 1px solid;
+  border-radius: 0.5rem;
+  background-color: rgba(255,255,255,0.1);
+  color: lightgray;
+  margin-bottom: 2rem;
+  width: 500px;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.artist {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.lyrics {
+  font-size: 1.1rem;
+  height: 500px;
+  white-space: pre;
+  overflow-y: hidden;
+}

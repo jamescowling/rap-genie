@@ -1,0 +1,6 @@
+.env.local
+node_modules
+venv
+.vscode
+*.csv
+__pycache__
