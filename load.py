@@ -37,8 +37,8 @@ with open("ds2.csv", "r") as f:
                 "title": song.title,
                 "year": ConvexInt64(int(song.year)),
                 "lyrics": song.lyrics,
-                "popularity": ConvexInt64(int(song.views)),
                 "features": song.features,
+                "geniusViews": ConvexInt64(int(song.views)),
                 "geniusId": ConvexInt64(int(song.id)),
             },
         )

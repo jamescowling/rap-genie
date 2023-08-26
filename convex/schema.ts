@@ -8,9 +8,15 @@ export default defineSchema({
     title: v.string(),
     year: v.int64(),
     lyrics: v.string(),
-    popularity: v.int64(), // views
     features: v.string(),
+    geniusViews: v.int64(),
     geniusId: v.int64(), // id
+    extracted: v.boolean(), // whether verses (and other things?) have been extracted
+  }).index("extracted", ["extracted"]),
+
+  verses: defineTable({
+    songId: v.id("songs"),
+    text: v.string(),
     embedding: v.optional(v.array(v.float64())),
   }).index("embedding", ["embedding"]),
 });

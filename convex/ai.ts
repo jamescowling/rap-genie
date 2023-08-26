@@ -3,6 +3,7 @@ import { api } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 
+// Fetch a batch of embeddings from OpenAI.
 export async function fetchEmbeddingBatch(text: string[]) {
   const result = await fetch("https://api.openai.com/v1/embeddings", {
     method: "POST",
@@ -25,40 +26,37 @@ export async function fetchEmbeddingBatch(text: string[]) {
   return allembeddings.map(({ embedding }) => embedding);
 }
 
-export const embed = action({
+// Generate embeddings for all verses.
+export const generateAllEmbeddings = action({
   args: {},
   handler: async (ctx, args) => {
     const batch: {
-      id: Id<"songs">;
-      lyrics: string;
+      id: Id<"verses">;
+      text: string;
     }[] = await ctx.runQuery(api.songs.getUnembeddedBatch, { limit: 100 });
     if (batch.length === 0) {
       return;
     }
 
-    const lyrics = batch.map((song) => song.lyrics);
-    const embeddings = await fetchEmbeddingBatch(lyrics);
+    const verses = batch.map((verse) => verse.text);
+    const embeddings = await fetchEmbeddingBatch(verses);
 
     await ctx.runMutation(api.songs.addEmbedding, {
-      batch: batch.map((song, i) => ({
-        id: song.id,
+      batch: batch.map((verse, i) => ({
+        id: verse.id,
         embedding: embeddings[i],
       })),
     });
 
-    console.log("embedded", batch.length, "songs");
+    console.log("embedded", batch.length, "verses");
     if (batch.length === 100) {
-      await ctx.scheduler.runAfter(0, api.ai.embed, {});
+      await ctx.scheduler.runAfter(0, api.ai.generateAllEmbeddings, {});
     }
   },
 });
 
-/**
- * Compares two vectors by doing a dot product.
- *
- * Assuming both vectors are normalized to length 1, it will be in [-1, 1].
- * @returns [-1, 1] based on similarity. (1 is the same, -1 is the opposite)
- */
+// Compare two vectors by doing a dot product.
+// returns [-1, 1] based on similarity. (1 is the same, -1 is the opposite)
 export function compare(vectorA: number[], vectorB: number[] | undefined) {
   if (vectorB === undefined) {
     return -1;
@@ -69,21 +67,35 @@ export function compare(vectorA: number[], vectorB: number[] | undefined) {
 export const hackyRank = query({
   args: {
     embedding: v.array(v.float64()),
+    count: v.float64(),
   },
   handler: async (ctx, args) => {
-    const songs = await ctx.db.query("songs").take(10);
-    const scores = await Promise.all(
-      songs.map(async (song) => {
-        const score = compare(args.embedding, song.embedding);
+    // XXX fetch all verses instead
+    const verses = await ctx.db.query("verses").take(100);
+    const scored = await Promise.all(
+      verses.map(async (verse) => {
+        const score = compare(args.embedding, verse.embedding);
         return {
           score,
-          artist: song.artist,
-          title: song.title,
-          lyrics: song.lyrics,
+          songId: verse.songId,
+          text: verse.text,
         };
       })
     );
-    return scores.sort((a, b) => b.score - a.score);
+    const topRanked = scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, args.count);
+    const verseInfos = await Promise.all(
+      topRanked.map(async (verse) => {
+        const song = await ctx.db.get(verse.songId);
+        return {
+          artist: song!.artist,
+          title: song!.title,
+          verse: verse.text,
+        };
+      })
+    );
+    return verseInfos;
   },
 });
 
@@ -93,13 +105,11 @@ export const search = action({
   },
   handler: async (ctx, args) => {
     const embedding = (await fetchEmbeddingBatch([args.text]))[0];
-    const rankings = await ctx.runQuery(api.ai.hackyRank, { embedding });
-    const top: {
-      score: number;
-      artist: string;
-      title: string;
-      lyrics: string;
-    } = rankings[0];
-    return top;
+    const rankings: { artist: string; title: string; verse: string }[] =
+      await ctx.runQuery(api.ai.hackyRank, {
+        embedding,
+        count: 3,
+      });
+    return rankings;
   },
 });

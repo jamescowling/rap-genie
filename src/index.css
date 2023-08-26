@@ -52,9 +52,8 @@ h1 {
   margin-bottom: 1rem;
 }
 
-.lyrics {
+.verse {
   font-size: 1.1rem;
-  height: 500px;
   white-space: pre;
   overflow-y: hidden;
 }

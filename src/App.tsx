@@ -5,16 +5,13 @@ import { useState } from "react";
 function App() {
   const search = useAction(api.ai.search);
   const [searchText, setSearchText] = useState("");
-  const [song, setSong] = useState({
-    score: 0,
-    title: "",
-    artist: "",
-    lyrics: "",
-  });
+  const [verses, setVerses] = useState<
+    { title: string; artist: string; verse: string }[]
+  >([]);
 
   const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    search({ text: searchText }).then(setSong);
+    search({ text: searchText }).then(setVerses);
     setSearchText("");
   };
 
@@ -35,13 +32,13 @@ function App() {
           Send
         </button>
       </form>
-      {song && (
+      {verses.map((verse) => (
         <div className="song">
-          <div className="title">{song.title}</div>
-          <div className="artist">{song.artist}</div>
-          <div className="lyrics">{song.lyrics}</div>
+          <div className="title">{verse.title}</div>
+          <div className="artist">{verse.artist}</div>
+          <div className="verse">{verse.verse}</div>
         </div>
-      )}
+      ))}
     </div>
   );
 }
