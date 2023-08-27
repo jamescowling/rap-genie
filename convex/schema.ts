@@ -12,8 +12,9 @@ export default defineSchema({
     geniusViews: v.int64(),
     geniusId: v.int64(), // id
     processed: v.boolean(), // whether verses (and other things?) have been extracted
-    // XXX add views field to index
-  }).index("processed", ["processed"]),
+  })
+    .index("processed", ["processed", "geniusViews"]) // used to find songs to process
+    .index("geniusId", ["geniusId"]), // used for uniqueness on loading
 
   verses: defineTable({
     songId: v.id("songs"),

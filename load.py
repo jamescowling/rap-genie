@@ -19,27 +19,46 @@ class Song:
         self.__dict__ = dict(zip(header, row))
 
 
+def addBatch(size, reader, header):
+    batch = []
+    done = False
+    for _ in range(size):
+        try:
+            row = next(reader)
+            song = Song(row, header)
+            if song.tag != "rap":
+                continue
+            batch.append(
+                {
+                    "genre": song.tag,
+                    "artist": song.artist,
+                    "title": song.title,
+                    "year": ConvexInt64(int(song.year)),
+                    "lyrics": song.lyrics,
+                    "features": song.features,
+                    "geniusViews": ConvexInt64(int(song.views)),
+                    "geniusId": ConvexInt64(int(song.id)),
+                }
+            )
+        except StopIteration:
+            done = True
+            break
+
+    if batch:
+        client.mutation("songs:addBatch", {"batch": batch})
+        print("Added batch of", len(batch))
+
+    if done:
+        raise StopIteration
+
+
 csv.field_size_limit(sys.maxsize)
 with open("ds2.csv", "r") as f:
     reader = csv.reader(f)
     header = next(reader)
-    i = 0
-    for row in reader:
-        i += 1
-        if i > 100:
-            break
-        song = Song(row, header)
-        client.mutation(
-            "songs:add",
-            {
-                "genre": song.tag,
-                "artist": song.artist,
-                "title": song.title,
-                "year": ConvexInt64(int(song.year)),
-                "lyrics": song.lyrics,
-                "features": song.features,
-                "geniusViews": ConvexInt64(int(song.views)),
-                "geniusId": ConvexInt64(int(song.id)),
-            },
-        )
-        print(song.tag, song.artist, song.title)
+
+    try:
+        while True:
+            addBatch(200, reader, header)
+    except StopIteration:
+        print("Done")

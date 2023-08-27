@@ -3,20 +3,35 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation } from "./_generated/server";
 
-// Add a song.
-export const add = mutation({
+// Add a batch of songs if each doesn't already exist.
+export const addBatch = mutation({
   args: {
-    genre: v.string(),
-    artist: v.string(),
-    title: v.string(),
-    year: v.int64(),
-    lyrics: v.string(),
-    features: v.string(),
-    geniusViews: v.int64(),
-    geniusId: v.int64(),
+    batch: v.array(
+      v.object({
+        genre: v.string(),
+        artist: v.string(),
+        title: v.string(),
+        year: v.int64(),
+        lyrics: v.string(),
+        features: v.string(),
+        geniusViews: v.int64(),
+        geniusId: v.int64(),
+      })
+    ),
   },
   handler: async (ctx, args) => {
-    await ctx.db.insert("songs", { processed: false, ...args });
+    await Promise.all(
+      args.batch.map(async (song) => {
+        const existing = await ctx.db
+          .query("songs")
+          .withIndex("geniusId", (q) => q.eq("geniusId", song.geniusId))
+          .unique();
+
+        if (!existing) {
+          await ctx.db.insert("songs", { processed: false, ...song });
+        }
+      })
+    );
   },
 });
 
@@ -25,11 +40,14 @@ export const add = mutation({
 export const getUnprocessedBatch = internalQuery({
   args: {
     limit: v.float64(),
+    minViews: v.int64(), // Only process songs with at least this many views.
   },
   handler: async (ctx, args) => {
     const batch = await ctx.db
       .query("songs")
-      .withIndex("processed", (q) => q.eq("processed", false))
+      .withIndex("processed", (q) =>
+        q.eq("processed", false).gte("geniusViews", args.minViews)
+      )
       .take(args.limit);
     return batch.map((song) => ({
       id: song._id,

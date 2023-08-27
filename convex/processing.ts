@@ -20,6 +20,7 @@ export const processSongBatch = internalAction({
   args: {
     limit: v.float64(),
     recurse: v.boolean(),
+    minViews: v.int64(),
   },
   handler: async (ctx, args) => {
     // Fetch batch of songs that haven't been processed yet.
@@ -28,6 +29,7 @@ export const processSongBatch = internalAction({
       lyrics: string;
     }[] = await ctx.runQuery(internal.songs.getUnprocessedBatch, {
       limit: args.limit,
+      minViews: args.minViews,
     });
     if (!batch.length) {
       console.log("no more songs to process");
