@@ -19,5 +19,5 @@ export default defineSchema({
     songId: v.id("songs"),
     text: v.string(),
     embedding: v.array(v.float64()),
-  }).index("embedding", ["embedding"]),
+  }).vectorIndex("embedding", { vectorField: "embedding", dimension: 1536 }),
 });

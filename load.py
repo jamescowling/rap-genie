@@ -26,7 +26,7 @@ with open("ds2.csv", "r") as f:
     i = 0
     for row in reader:
         i += 1
-        if i > 1000:
+        if i > 100:
             break
         song = Song(row, header)
         client.mutation(

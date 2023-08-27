@@ -7,7 +7,7 @@
 
 ## TODO
 
-- move to convex vector search
+- seems like the vector results are getting returned in reverse order? check this
 - change mascot to something more cartoony
 - only index songs that are popular, or rank them by popularity
 - link display to genius listing
