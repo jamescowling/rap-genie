@@ -19,7 +19,7 @@ export function splitVerses(lyrics: string) {
 export const processSongBatch = internalAction({
   args: {
     limit: v.float64(),
-    recurse: v.boolean(),
+    recursive: v.boolean(),
     minViews: v.int64(),
   },
   handler: async (ctx, args) => {
@@ -55,7 +55,7 @@ export const processSongBatch = internalAction({
     });
     console.log("processed", batch.length, "songs");
 
-    if (args.recurse) {
+    if (args.recursive) {
       await ctx.scheduler.runAfter(
         0,
         internal.processing.processSongBatch,
