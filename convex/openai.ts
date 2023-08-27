@@ -19,7 +19,7 @@ export async function fetchEmbeddingBatch(text: string[]) {
     embedding: number[];
     index: number;
   }[];
-  allembeddings.sort((a, b) => b.index - a.index);
+  allembeddings.sort((a, b) => a.index - b.index);
   return allembeddings.map(({ embedding }) => embedding);
 }
 

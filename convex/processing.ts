@@ -78,3 +78,27 @@ export const clearAll = internalMutation({
     }
   },
 });
+
+// Delete all verses and mark all songs as unprocessed.
+// XXX this code could be way better and transactionall process one song at a time
+export const clearVerses = internalMutation({
+  handler: async (ctx) => {
+    const limit = 100;
+    const verseBatch = await ctx.db.query("verses").take(limit);
+    await Promise.all(verseBatch.map((verse) => ctx.db.delete(verse._id)));
+    const songBatch = await ctx.db
+      .query("songs")
+      .withIndex("processed", (q) => q.eq("processed", true))
+      .take(limit);
+    await Promise.all(
+      songBatch.map((song) =>
+        ctx.db.patch(song._id, {
+          processed: false,
+        })
+      )
+    );
+    if (songBatch.length === limit || verseBatch.length === limit) {
+      await ctx.scheduler.runAfter(0, internal.processing.clearVerses, {});
+    }
+  },
+});
