@@ -11,12 +11,13 @@ export default defineSchema({
     features: v.string(),
     geniusViews: v.int64(),
     geniusId: v.int64(), // id
-    extracted: v.boolean(), // whether verses (and other things?) have been extracted
-  }).index("extracted", ["extracted"]),
+    processed: v.boolean(), // whether verses (and other things?) have been extracted
+    // XXX add views field to index
+  }).index("processed", ["processed"]),
 
   verses: defineTable({
     songId: v.id("songs"),
     text: v.string(),
-    embedding: v.optional(v.array(v.float64())),
+    embedding: v.array(v.float64()),
   }).index("embedding", ["embedding"]),
 });

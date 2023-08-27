@@ -17,79 +17,44 @@ export const add = mutation({
     geniusId: v.int64(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.insert("songs", { extracted: false, ...args });
+    await ctx.db.insert("songs", { processed: false, ...args });
   },
 });
 
-// Get a batch of verses that don't yet have embeddings.
-export const getUnembeddedBatch = internalQuery({
+// Get a batch of songs that haven't been processed yet, i.e., their verses
+// haven't been extracted with embeddings.
+export const getUnprocessedBatch = internalQuery({
   args: {
     limit: v.float64(),
   },
   handler: async (ctx, args) => {
     const batch = await ctx.db
-      .query("verses")
-      .withIndex("embedding", (q) => q.eq("embedding", undefined))
+      .query("songs")
+      .withIndex("processed", (q) => q.eq("processed", false))
       .take(args.limit);
-    return batch.map((verse) => ({
-      id: verse._id,
-      text: verse.text.replace(/\n/g, " "), // XXX not sure if replace is needed for OpenAI
+    return batch.map((song) => ({
+      id: song._id,
+      lyrics: song.lyrics,
     }));
   },
 });
 
-// Store embeddings for a batch of verses.
-export const addEmbedding = internalMutation({
+// Store embeddings for a batch of verses and mark the song as processed.
+export const addVersesAndMarkProcessed = internalMutation({
   args: {
     batch: v.array(
-      v.object({ id: v.id("verses"), embedding: v.array(v.float64()) })
+      v.object({
+        songId: v.id("songs"),
+        text: v.string(),
+        embedding: v.array(v.float64()),
+      })
     ),
   },
   handler: async (ctx, args) => {
     for (const verse of args.batch) {
-      await ctx.db.patch(verse.id, { embedding: verse.embedding });
+      await ctx.db.insert("verses", verse);
+      // We run this too many times but that's ok.
+      await ctx.db.patch(verse.songId, { processed: true });
     }
-  },
-});
-
-// Split a song into useable verses.
-export function splitVerses(lyrics: string) {
-  // split verses by a double newline or line that starts and end with square brackets
-  // (e.g. [Verse 1] or [Chorus])
-  const verses = lyrics.split(/\n\n|^\[.*\]\n/gm);
-  // filter out verses that are less than 10 words long
-  return verses.filter((verse) => verse.split(" ").length > 10);
-}
-
-// Call this function to extract verses out of songs that haven't yet been
-// extracted.
-export const extractVerses = internalMutation({
-  args: {},
-  handler: async (ctx, args) => {
-    const batch = await ctx.db
-      .query("songs")
-      .withIndex("extracted", (q) => q.eq("extracted", false))
-      .take(100);
-    if (batch.length === 0) {
-      return;
-    }
-
-    const extracted = batch.map((song) => ({
-      id: song._id,
-      verses: splitVerses(song.lyrics),
-    }));
-
-    for (const song of extracted) {
-      for (const verse of song.verses) {
-        await ctx.db.insert("verses", {
-          songId: song.id,
-          text: verse,
-        });
-      }
-      console.log("extracted", song.verses.length, "verses from", song.id);
-      await ctx.db.patch(song.id, { extracted: true });
-    }
-
-    await ctx.scheduler.runAfter(0, internal.songs.extractVerses, {});
   },
 });
