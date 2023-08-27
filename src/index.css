@@ -1,5 +1,5 @@
 body {
-  margin: 2rem;
+  margin: 8rem;
   background: black url('genie.png') no-repeat bottom right fixed;
   background-size: auto 100vh;
   color: lightgray;
@@ -10,12 +10,16 @@ h1 {
   font-size: 4rem;
   font-family: 'Fruktur', cursive;
   margin-bottom: 0;
+  text-shadow: 0 0 150px rgb(0, 191, 255, 0.75),
+  0 0 50px rgba(203, 255, 255, 0.2);
 }
 
 .byline {
   font-size: 1.5rem;
   letter-spacing: .16rem;
   margin-bottom: 3rem;
+  text-shadow: 0 0 150px rgb(0, 191, 255, 0.75),
+  0 0 50px rgba(203, 255, 255, 0.2);
 }
 
 .search {
@@ -23,7 +27,9 @@ h1 {
   width: 500px;
   margin-bottom: 3.5rem;
   color: lightgray;
-  background-color: rgba(255,255,255,0.1);
+  background-color: black;
+  box-shadow: 0 0 150px rgb(0, 191, 255, 0.5),
+  0 0 50px rgba(203, 255, 255, 0.1);
 }
 
 .submit {
@@ -33,11 +39,13 @@ h1 {
 .song {
   border: 1px solid;
   border-radius: 0.5rem;
-  background-color: rgba(255,255,255,0.1);
+  background-color: black;
   color: lightgray;
   margin-bottom: 2rem;
   width: 500px;
   padding: 1rem;
+  box-shadow: 0 0 150px rgb(0, 191, 255, 0.2),
+  0 0 50px rgba(203, 255, 255, 0.05);
 }
 
 .title {

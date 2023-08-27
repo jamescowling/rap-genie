@@ -2,7 +2,6 @@
 
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation } from "./_generated/server";
-import { internal } from "./_generated/api";
 
 // Add a song.
 export const add = mutation({
