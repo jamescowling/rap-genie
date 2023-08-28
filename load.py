@@ -66,7 +66,6 @@ def main():
                         i += 1
                     row = next(reader)
                     i += 1
-                    print(row)
                     song = Song(row, header)
                     if song.tag != "rap":
                         continue
