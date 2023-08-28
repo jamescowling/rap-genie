@@ -14,7 +14,7 @@ from convex.values import ConvexInt64
 
 SOURCE = "ds2.csv"
 BATCH_SIZE = 250
-SAMPLE_SKIP = 1000  # how many rows to skip before adding a song
+SAMPLE_SKIP = 100  # how many rows to skip before adding a song
 
 load_dotenv(".env.local")
 load_dotenv()

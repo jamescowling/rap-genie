@@ -96,6 +96,11 @@ export const storeProcessedBatch = internalMutation({
 
 // Processes a batch of unprocessed songs to generate and store verse
 // embeddings.
+//
+// Suggested args:
+//  limit: 50
+//  recursive: true
+//  minViews: 100000n
 export const processSongBatch = internalAction({
   args: {
     limit: v.float64(),
