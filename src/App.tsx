@@ -4,6 +4,7 @@ import { useState } from "react";
 
 function App() {
   const search = useAction(api.search.search);
+  const [newSearchText, setNewSearchText] = useState("");
   const [searchText, setSearchText] = useState("");
   const [verses, setVerses] = useState<
     { title: string; artist: string; verse: string; geniusId: bigint }[]
@@ -11,8 +12,11 @@ function App() {
 
   const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    search({ text: searchText, count: 3 }).then(setVerses);
-    setSearchText("");
+    search({ text: newSearchText, count: 3 }).then((verses) => {
+      setSearchText(newSearchText);
+      setVerses(verses);
+    });
+    setNewSearchText("");
   };
 
   return (
@@ -22,16 +26,17 @@ function App() {
       <form onSubmit={handleSearch}>
         <input
           className="search"
-          value={searchText}
+          value={newSearchText}
           onChange={async (e) => {
-            setSearchText(e.target.value);
+            setNewSearchText(e.target.value);
           }}
           placeholder="theme to search for..."
         />
-        <button type="submit" className="submit" disabled={!searchText}>
+        <button type="submit" className="submit" disabled={!newSearchText}>
           Send
         </button>
       </form>
+      <h2>{searchText}</h2>
       {verses.map((verse) => (
         <div className="song">
           <a
