@@ -10,5 +10,5 @@
 - get a domain name and host site. rapgenie.net?
 - add link to github repo and convex
 - change mascot to something more cartoony
-- only index songs that are popular, or rank them by popularity
+- introduce some kind of filtering or ranking by popularity
 - look up album art for each song with genius api

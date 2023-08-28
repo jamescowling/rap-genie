@@ -5,21 +5,35 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { fetchEmbedding } from "./openai";
 
+// Get the info we want to send to the client for a batch of verses.
 export const getVerseInfos = internalQuery({
   args: {
     verseIds: v.array(v.id("verses")),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, { verseIds }) => {
     return await Promise.all(
-      args.verseIds.map(async (verseId) => {
+      verseIds.map(async (verseId) => {
         const verse = await ctx.db.get(verseId);
-        // XXX search for ! and add error handling
-        const song = await ctx.db.get(verse!.songId);
+        // Verse could be missing if it was deleted while the calling action was
+        // running, since actions aren't transactional.
+        if (!verse) {
+          // I wanted to return null here and then use
+          // .filter((item) => item !== null);
+          // but type inference is failing me.
+          return { artist: "", title: "", verse: "", geniusId: 0n };
+        }
+        const song = await ctx.db.get(verse.songId);
+        if (!song) {
+          // This shouldn't happen though because queries are transactional.
+          throw new Error(
+            `Verse ${verseId} has songId ${verse.songId} which does not exist`
+          );
+        }
         return {
-          artist: song!.artist,
-          title: song!.title,
-          verse: verse!.text,
-          geniusId: song!.geniusId,
+          artist: song.artist,
+          title: song.title,
+          verse: verse.text,
+          geniusId: song.geniusId,
         };
       })
     );
@@ -32,13 +46,13 @@ export const search = action({
     text: v.string(),
     count: v.float64(),
   },
-  handler: async (ctx, args) => {
-    const queryEmbedding = await fetchEmbedding(args.text);
+  handler: async (ctx, { text, count }) => {
+    const queryEmbedding = await fetchEmbedding(text);
     const verseIds = await ctx
       .vectorSearch("verses", "embedding", {
         vector: queryEmbedding,
         vectorField: "embedding",
-        limit: args.count,
+        limit: count,
       })
       .then((results) => results.map((result) => result._id));
     const verseInfos: {
