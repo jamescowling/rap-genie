@@ -1,6 +1,7 @@
 .env.local
-node_modules
-venv
+node_modules/
+venv/
 .vscode
-*.csv
-__pycache__
+ds2.csv
+__pycache__/
+dist/
