@@ -10,8 +10,8 @@ import { v } from "convex/values";
 export function splitVerses(lyrics: string) {
   // Split by double newline or [brackets line].
   const verses = lyrics.split(/\n\n|^\[.*\]\n/gm);
-  // Filter out verses that are less than 10 words long.
-  return verses.filter((verse) => verse.split(" ").length > 10);
+  // Filter out verses that are less than 16 words long.
+  return verses.filter((verse) => verse.split(" ").length > 16);
 }
 
 // Processes a batch of unprocessed songs to generate and store verse
