@@ -19,6 +19,7 @@ export const getVerseInfos = internalQuery({
           artist: song!.artist,
           title: song!.title,
           verse: verse!.text,
+          geniusId: song!.geniusId,
         };
       })
     );
@@ -44,6 +45,7 @@ export const search = action({
       artist: string;
       title: string;
       verse: string;
+      geniusId: bigint;
     }[] = await ctx.runQuery(internal.search.getVerseInfos, {
       verseIds,
     });

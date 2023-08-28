@@ -6,7 +6,7 @@ function App() {
   const search = useAction(api.search.search);
   const [searchText, setSearchText] = useState("");
   const [verses, setVerses] = useState<
-    { title: string; artist: string; verse: string }[]
+    { title: string; artist: string; verse: string; geniusId: bigint }[]
   >([]);
 
   const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -34,8 +34,13 @@ function App() {
       </form>
       {verses.map((verse) => (
         <div className="song">
-          <div className="title">{verse.title}</div>
-          <div className="artist">{verse.artist}</div>
+          <a
+            className="headerLink"
+            href={`https://genius.com/songs/${verse.geniusId}`}
+          >
+            <div className="title">{verse.title}</div>
+            <div className="artist">{verse.artist}</div>
+          </a>
           <div className="verse">{verse.verse}</div>
         </div>
       ))}

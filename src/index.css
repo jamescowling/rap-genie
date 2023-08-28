@@ -48,6 +48,16 @@ h1 {
   0 0 50px rgba(203, 255, 255, 0.05);
 }
 
+.headerLink {
+  text-decoration: none;
+  color: rgb(223, 183, 7);
+  transition: all 0.3s ease; 
+}
+
+.headerLink:hover {
+  color: rgb(255,255,100);
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: bold;

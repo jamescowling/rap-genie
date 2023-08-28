@@ -9,4 +9,6 @@
 
 - change mascot to something more cartoony
 - only index songs that are popular, or rank them by popularity
-- link display to genius listing
+- remove verses with duplicate text
+- "fight the power" by public enemy isn't paginated properly
+- look up album art for each song with genius api
