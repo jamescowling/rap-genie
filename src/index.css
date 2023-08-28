@@ -74,6 +74,7 @@ h2 {
 
 .verse {
   font-size: 1.1rem;
-  white-space: pre;
-  overflow-y: hidden;
+  white-space: pre-wrap;
+  overflow-y: auto; 
+  max-height: 20rem;
 }

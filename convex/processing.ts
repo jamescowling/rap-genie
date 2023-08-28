@@ -11,7 +11,12 @@ export function splitVerses(lyrics: string) {
   // Split by double newline or [brackets line].
   const verses = lyrics.split(/\n\n|^\[.*\]\n/gm);
   // Filter out verses that are less than 16 words long.
-  return verses.filter((verse) => verse.split(" ").length > 16);
+  const longVerses = verses.filter((verse) => verse.split(" ").length > 16);
+  // Trim whitespace.
+  const trimmedVerses = longVerses.map((verse) => verse.trim());
+  // Eliminate any duplicate verses.
+  const uniqueVerses = [...new Set(trimmedVerses)];
+  return uniqueVerses;
 }
 
 // Processes a batch of unprocessed songs to generate and store verse
