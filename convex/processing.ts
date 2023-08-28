@@ -1,20 +1,21 @@
 // Data processing/generation functions.
 
-import { internalAction, internalMutation } from "./_generated/server";
+import {
+  DatabaseWriter,
+  internalAction,
+  internalMutation,
+} from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { fetchEmbeddingBatch } from "./openai";
-import { v } from "convex/values";
+import { GenericId, v } from "convex/values";
+import { GenericDatabaseWriter } from "convex/server";
 
 // Split a song into useable verses.
-export function splitVerses(lyrics: string) {
-  // Split by double newline or [brackets line].
-  const verses = lyrics.split(/\n\n|^\[.*\]\n/gm);
-  // Filter out verses that are less than 16 words long.
+function splitSong(lyrics: string) {
+  const verses = lyrics.split(/\n\n|^\[.*\]\n/gm); // double newline or [brackets line]
   const longVerses = verses.filter((verse) => verse.split(" ").length > 16);
-  // Trim whitespace.
   const trimmedVerses = longVerses.map((verse) => verse.trim());
-  // Eliminate any duplicate verses.
   const uniqueVerses = [...new Set(trimmedVerses)];
   return uniqueVerses;
 }
@@ -43,7 +44,7 @@ export const processSongBatch = internalAction({
 
     // Split each song out into verses and compute embeddings.
     const verses = batch.flatMap((song) =>
-      splitVerses(song.lyrics).map((verse) => ({
+      splitSong(song.lyrics).map((verse) => ({
         songId: song.id,
         text: verse,
       }))
@@ -60,12 +61,43 @@ export const processSongBatch = internalAction({
     });
     console.log("processed", batch.length, "songs");
 
-    if (args.recursive) {
+    if (args.recursive && batch.length === args.limit) {
       await ctx.scheduler.runAfter(
         0,
         internal.processing.processSongBatch,
         args
       );
+    }
+  },
+});
+
+// Delete all verses for a song and mark it as unprocessed.
+async function unprocessSong(db: DatabaseWriter, songId: Id<"songs">) {
+  const verseBatch = await db
+    .query("verses")
+    .withIndex("songId", (q: any) => q.eq("songId", songId))
+    .collect();
+  await Promise.all(verseBatch.map((verse) => db.delete(verse._id)));
+  await db.patch(songId, { processed: false });
+}
+
+// Delete batch of verses and mark all songs as unprocessed.
+export const unprocessSongBatch = internalMutation({
+  args: {
+    limit: v.float64(),
+    recursive: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const songBatch = await ctx.db
+      .query("songs")
+      .withIndex("processed", (q) => q.eq("processed", true))
+      .take(args.limit);
+    await Promise.all(songBatch.map((song) => unprocessSong(ctx.db, song._id)));
+    if (args.recursive && songBatch.length === args.limit) {
+      await ctx.scheduler.runAfter(0, internal.processing.unprocessSongBatch, {
+        limit: args.limit,
+        recursive: args.recursive,
+      });
     }
   },
 });
@@ -80,30 +112,6 @@ export const clearAll = internalMutation({
     await Promise.all(verseBatch.map((verse) => ctx.db.delete(verse._id)));
     if (songBatch.length === limit || verseBatch.length === limit) {
       await ctx.scheduler.runAfter(0, internal.processing.clearAll, {});
-    }
-  },
-});
-
-// Delete all verses and mark all songs as unprocessed.
-// XXX this code could be way better and transactionall process one song at a time
-export const clearVerses = internalMutation({
-  handler: async (ctx) => {
-    const limit = 100;
-    const verseBatch = await ctx.db.query("verses").take(limit);
-    await Promise.all(verseBatch.map((verse) => ctx.db.delete(verse._id)));
-    const songBatch = await ctx.db
-      .query("songs")
-      .withIndex("processed", (q) => q.eq("processed", true))
-      .take(limit);
-    await Promise.all(
-      songBatch.map((song) =>
-        ctx.db.patch(song._id, {
-          processed: false,
-        })
-      )
-    );
-    if (songBatch.length === limit || verseBatch.length === limit) {
-      await ctx.scheduler.runAfter(0, internal.processing.clearVerses, {});
     }
   },
 });
