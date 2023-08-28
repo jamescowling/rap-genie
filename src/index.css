@@ -1,6 +1,6 @@
 body {
   margin: 6rem;
-  background: black url('genie.png') no-repeat bottom right fixed;
+  background: black url('../assets/genie.png') no-repeat bottom right fixed;
   background-size: auto 100vh;
   color: lightgray;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
