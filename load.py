@@ -8,14 +8,18 @@ import sys
 import os
 import time
 from dotenv import load_dotenv
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import requests
+
 
 from convex import ConvexClient
 from convex.values import ConvexInt64
-import requests
 
 SOURCE = "ds2.csv"
 BATCH_SIZE = 250
-SAMPLE_SKIP = 0  # how many rows to skip before adding a song
+SAMPLE_SKIP = 0  # how many rows to skip between each song added
+START_OFFSET = 0  # how many rows to skip at the start
+MAX_WORKERS = 10  # concurrent requests to Convex
 
 load_dotenv(".env.local")
 load_dotenv()
@@ -31,7 +35,7 @@ class Song:
 
 
 # Write a batch of songs to Convex.
-def writeBatch(batch, offset):
+def write_batch(batch, offset):
     if not batch:
         return
     backoff = 1
@@ -52,24 +56,22 @@ def writeBatch(batch, offset):
             backoff *= 2
 
 
-def main():
-    with open(SOURCE, "r") as f:
-        reader = csv.reader(f)
-        header = next(reader)
-        done = False
-        i = 0
-        while not done:
-            batch = []
-            for _ in range(BATCH_SIZE):
-                try:
-                    for _ in range(SAMPLE_SKIP):
-                        next(reader)
-                        i += 1
-                    row = next(reader)
+# A generator that will yield batches of songs and their offset in the CSV.
+def generate_batches(reader, header):
+    i = 0
+    for i in range(START_OFFSET):
+        next(reader, None)
+        i += 1
+    while True:
+        batch = []
+        for _ in range(BATCH_SIZE):
+            try:
+                for _ in range(SAMPLE_SKIP):
+                    next(reader)
                     i += 1
-                    song = Song(row, header)
-                    if song.tag != "rap":
-                        continue
+                song = Song(next(reader), header)
+                i += 1
+                if song.tag == "rap":
                     batch.append(
                         {
                             "genre": song.tag,
@@ -82,9 +84,24 @@ def main():
                             "geniusId": ConvexInt64(int(song.id)),
                         }
                     )
-                except StopIteration:
-                    done = True
-            writeBatch(batch, i)
+            except StopIteration:
+                if batch:
+                    yield batch, i
+                break
+        yield batch, i
+
+
+def main():
+    with open(SOURCE, "r") as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        with ThreadPoolExecutor(MAX_WORKERS) as executor:
+            futures = [
+                executor.submit(write_batch, batch, offset)
+                for batch, offset in generate_batches(reader, header)
+            ]
+            for future in as_completed(futures):
+                future.result()
 
 
 main()
