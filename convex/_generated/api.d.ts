@@ -14,7 +14,6 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as accounting from "../accounting";
 import type * as openai from "../openai";
 import type * as search from "../search";
 import type * as songs from "../songs";
@@ -28,7 +27,6 @@ import type * as songs from "../songs";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  accounting: typeof accounting;
   openai: typeof openai;
   search: typeof search;
   songs: typeof songs;
