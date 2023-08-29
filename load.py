@@ -11,10 +11,11 @@ from dotenv import load_dotenv
 
 from convex import ConvexClient
 from convex.values import ConvexInt64
+import requests
 
 SOURCE = "ds2.csv"
 BATCH_SIZE = 250
-SAMPLE_SKIP = 100  # how many rows to skip before adding a song
+SAMPLE_SKIP = 0  # how many rows to skip before adding a song
 
 load_dotenv(".env.local")
 load_dotenv()
@@ -39,7 +40,7 @@ def writeBatch(batch, offset):
             client.mutation("songs:addBatch", {"batch": batch})
             print("Added batch of", len(batch), "at offset", offset)
             break
-        except ConnectionError:
+        except requests.exceptions.ConnectionError:
             print(
                 "ConnectionError at offset",
                 offset,
