@@ -108,6 +108,8 @@ export const processSongBatch = internalAction({
     minViews: v.int64(),
   },
   handler: async (ctx, args) => {
+    await ctx.runMutation(internal.accounting.logAction);
+
     // Fetch batch of songs that haven't been processed yet.
     const batch = await ctx.runQuery(internal.songs.getUnprocessedBatch, {
       limit: args.limit,

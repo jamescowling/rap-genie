@@ -23,4 +23,8 @@ export default defineSchema({
   })
     .index("songId", ["songId"])
     .vectorIndex("embedding", { vectorField: "embedding", dimension: 1536 }),
+
+  actionLog: defineTable({
+    timestamp: v.float64(),
+  }),
 });

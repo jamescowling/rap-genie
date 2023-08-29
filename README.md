@@ -7,6 +7,7 @@
 
 ## TODO
 
+- remove accounting.ts and table
 - get a domain name and host site. rapgenie.net?
 - add link to github repo and convex
 - change mascot to something more cartoony

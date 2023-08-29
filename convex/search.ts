@@ -47,6 +47,8 @@ export const search = action({
     count: v.float64(),
   },
   handler: async (ctx, { text, count }) => {
+    await ctx.runMutation(internal.accounting.logAction);
+
     const queryEmbedding = await fetchEmbedding(text);
     const verseIds = await ctx
       .vectorSearch("verses", "embedding", {
