@@ -7,7 +7,13 @@ function App() {
   const [newSearchText, setNewSearchText] = useState("");
   const [searchText, setSearchText] = useState("");
   const [verses, setVerses] = useState<
-    { title: string; artist: string; verse: string; geniusId: bigint }[]
+    {
+      title: string;
+      artist: string;
+      verse: string;
+      geniusId: bigint;
+      score: number;
+    }[]
   >([]);
 
   const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,6 +51,7 @@ function App() {
           >
             <div className="title">{verse.title}</div>
             <div className="artist">{verse.artist}</div>
+            <div>{(verse.score * 100).toFixed(1)}% match</div>
           </a>
           <div className="verse">{verse.verse}</div>
         </div>

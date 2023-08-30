@@ -48,13 +48,12 @@ export const search = action({
   },
   handler: async (ctx, { text, count }) => {
     const queryEmbedding = await fetchEmbedding(text);
-    const verseIds = await ctx
-      .vectorSearch("verses", "embedding", {
-        vector: queryEmbedding,
-        vectorField: "embedding",
-        limit: count,
-      })
-      .then((results) => results.map((result) => result._id));
+    const matches = await ctx.vectorSearch("verses", "embedding", {
+      vector: queryEmbedding,
+      vectorField: "embedding",
+      limit: count,
+    });
+    const verseIds = matches.map((match) => match._id);
     const verseInfos: {
       artist: string;
       title: string;
@@ -63,6 +62,9 @@ export const search = action({
     }[] = await ctx.runQuery(internal.search.getVerseInfos, {
       verseIds,
     });
-    return verseInfos;
+    const scoredVerses = verseInfos.map((verseInfo, index) => {
+      return { ...verseInfo, score: matches[index].score };
+    });
+    return scoredVerses;
   },
 });
