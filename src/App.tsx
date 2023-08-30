@@ -27,33 +27,29 @@ function App() {
 
   return (
     <div className="App">
-      <h1>RapGenie</h1>
-      <div className="byline">semantic verse search</div>
+      <p>in the process of redesigning...</p>
+      <h1 className="logo">RapGenie</h1>
+      <div>Semantic verse search</div>
       <form onSubmit={handleSearch}>
         <input
-          className="search"
           value={newSearchText}
           onChange={async (e) => {
             setNewSearchText(e.target.value);
           }}
-          placeholder="theme to search for..."
+          placeholder="Theme to search for..."
         />
-        <button type="submit" className="submit" disabled={!newSearchText}>
-          Send
+        <button type="submit" disabled={!newSearchText}>
+          Search
         </button>
       </form>
-      <h2>{searchText}</h2>
+      <h2>query: {searchText}</h2>
       {verses.map((verse) => (
-        <div className="song">
-          <a
-            className="headerLink"
-            href={`https://genius.com/songs/${verse.geniusId}`}
-          >
-            <div className="title">{verse.title}</div>
-            <div className="artist">{verse.artist}</div>
-            <div>{(verse.score * 100).toFixed(1)}% match</div>
-          </a>
+        <div>
+          <h3>{verse.title}</h3>
+          <h4>{verse.artist}</h4>
+          <div>{(verse.score * 100).toFixed(1)}% match</div>
           <div className="verse">{verse.verse}</div>
+          <a href={`https://genius.com/songs/${verse.geniusId}`}>Genius link</a>
         </div>
       ))}
     </div>
