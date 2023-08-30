@@ -48,7 +48,7 @@ def write_batch(batch, offset):
             print(
                 "ConnectionError at offset",
                 offset,
-                ", retrying in",
+                "retrying in",
                 backoff,
                 "seconds",
             )
@@ -60,6 +60,8 @@ def write_batch(batch, offset):
 def generate_batches(reader, header):
     i = 0
     for i in range(START_OFFSET):
+        if i % 10000 == 0:
+            print("Skipping", i, "rows")
         next(reader, None)
         i += 1
     while True:
