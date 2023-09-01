@@ -59,12 +59,32 @@ export const getUnprocessedBatch = internalQuery({
   },
 });
 
+// Return some kind of prefix for a verse that can be used to remove duplicates.
+function versePrefix(verse: string) {
+  return verse
+    .toLowerCase()
+    .replace(/[^\w\s]|_/g, "") // eliminate punctuation
+    .split(" ")
+    .slice(0, 16)
+    .join(" ");
+}
+
 // Split a song into useable verses.
 function splitSong(lyrics: string) {
   const verses = lyrics.split(/\n\n|^\[.*\]\n/gm); // double newline or [brackets line]
   const longVerses = verses.filter((verse) => verse.split(" ").length > 16);
   const trimmedVerses = longVerses.map((verse) => verse.trim());
-  const uniqueVerses = [...new Set(trimmedVerses)];
+
+  // Exclude any verses that have the same prefix as a previous verse.
+  const addedPrefixes = new Set();
+  const uniqueVerses = trimmedVerses.filter((verse) => {
+    const prefix = versePrefix(verse);
+    if (!addedPrefixes.has(prefix)) {
+      addedPrefixes.add(prefix);
+      return true;
+    }
+    return false;
+  });
   return uniqueVerses;
 }
 
