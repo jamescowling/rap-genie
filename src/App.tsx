@@ -4,7 +4,7 @@ import { SVGProps, useState } from "react";
 import { Id } from "../convex/_generated/dataModel";
 import { JSX } from "react/jsx-runtime";
 
-import rgLogo from "../assets/rg.svg";
+import rgLogo from "../assets/rg.png";
 
 function Header() {
   return (
