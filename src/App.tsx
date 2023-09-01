@@ -4,14 +4,12 @@ import { SVGProps, useState } from "react";
 import { Id } from "../convex/_generated/dataModel";
 import { JSX } from "react/jsx-runtime";
 
+import rgLogo from "../assets/rg.svg";
+
 function Header() {
   return (
     <div className="mx-auto max-w-2xl lg:mx-0">
-      <img
-        src="../assets/rg.svg"
-        alt="RapGenie"
-        className="h-36 mb-12 w-auto"
-      />
+      <img src={rgLogo} alt="RapGenie" className="h-36 mb-12 w-auto" />
       <h1 className="mt-2 text-4xl tracking-tight font-['Fruktur'] text-amber-400 sm:text-6xl">
         RapGenie
       </h1>
