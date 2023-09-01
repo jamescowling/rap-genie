@@ -9,10 +9,7 @@ import rgLogo from "../assets/rg.svg";
 function Header() {
   return (
     <div className="mx-auto max-w-2xl lg:mx-0">
-      <img src={rgLogo} alt="RapGenie" className="h-36 mb-12 w-auto" />
-      <h1 className="mt-2 text-4xl tracking-tight font-['Fruktur'] text-amber-400 sm:text-6xl">
-        RapGenie
-      </h1>
+      <img src={rgLogo} alt="RapGenie" className="h-52 my-8 w-auto" />
       <h3 className="mt-6 text-lg leading-8">
         Semantic verse search. Powered by{" "}
         <a href="https://convex.dev">Convex</a> and{" "}
@@ -42,7 +39,9 @@ function SongCard({
           <p className="mt-1">{verse.artist}</p>
           <div>{(verse.score * 100).toFixed(1)}% match</div>
         </div>
-        <div className="verse p-4 sm:p-6">{verse.verse}</div>
+        <div className="p-4 sm:p-6" style={{ whiteSpace: "pre-wrap" }}>
+          {verse.verse}
+        </div>
         <div className="p-4 sm:px-6 text-right">
           <a
             className="font-semibold text-amber-400 hover:text-amber-300"
@@ -135,15 +134,15 @@ function Footer() {
 function AboutBox() {
   return (
     <div className="bg-stone-700 shadow sm:rounded-lg max-w-xl mx-auto mt-20 mb-8 px-4 py-5 sm:p-6">
-      <h3 className="text-base font-semibold leading-6">About RapGenie</h3>
       <div className="mt-2 max-w-xl text-sm">
         <p>
           Rap Genie uses OpenAI to generate an embedding for each verse and each
-          search query. The rest of the app is built entirely on Convex, a
-          serverless fullstack development platform that makes it easy to build
-          dynamic web apps, talk to third party APIs, and run background jobs.
-          Feel free to fork the repo to make changes, or build something else
-          cool on Convex.
+          search query. The song/verse database is stored in Convex and Convex
+          vector search is used to obtain the embeddings that have the closest
+          cosine similarity to a given search query. Convex is a serverless
+          fullstack development platform that makes it easy to build dynamic web
+          apps, talk to third party APIs, and run background jobs. Feel free to
+          fork the repo to make changes, or build something else cool on Convex.
         </p>
       </div>
       <div className="mt-5 space-x-4">
