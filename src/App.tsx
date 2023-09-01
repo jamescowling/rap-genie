@@ -37,7 +37,9 @@ function SongCard({
         <div className="border-b border-stone-400 px-4 py-5 sm:px-6">
           <h3 className="font-bold text-xl text-amber-400">{verse.title}</h3>
           <p className="mt-1">{verse.artist}</p>
-          <div>{(verse.score * 100).toFixed(1)}% match</div>
+          <p className="text-stone-400">
+            {(verse.score * 100).toFixed(1)}% match
+          </p>
         </div>
         <div className="p-4 sm:p-6" style={{ whiteSpace: "pre-wrap" }}>
           {verse.verse}
