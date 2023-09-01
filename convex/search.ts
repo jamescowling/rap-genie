@@ -4,6 +4,7 @@ import { action, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { fetchEmbedding } from "./openai";
+import { Id } from "./_generated/dataModel";
 
 // Get the info we want to send to the client for a batch of verses.
 export const getVerseInfos = internalQuery({
@@ -11,16 +12,13 @@ export const getVerseInfos = internalQuery({
     verseIds: v.array(v.id("verses")),
   },
   handler: async (ctx, { verseIds }) => {
-    return await Promise.all(
+    const verseInfos = await Promise.all(
       verseIds.map(async (verseId) => {
         const verse = await ctx.db.get(verseId);
         // Verse could be missing if it was deleted while the calling action was
         // running, since actions aren't transactional.
         if (!verse) {
-          // I wanted to return null here and then use
-          // .filter((item) => item !== null);
-          // but type inference is failing me.
-          return { artist: "", title: "", verse: "", geniusId: 0n };
+          return null;
         }
         const song = await ctx.db.get(verse.songId);
         if (!song) {
@@ -30,6 +28,7 @@ export const getVerseInfos = internalQuery({
           );
         }
         return {
+          verseId: verse._id,
           artist: song.artist,
           title: song.title,
           verse: verse.text,
@@ -37,6 +36,10 @@ export const getVerseInfos = internalQuery({
         };
       })
     );
+    // The extraneous map operation just reassures typescript that there really
+    // aren't any nulls left. I promise typescript, there aren't. Just look at
+    // that little filter operation. It's filtering so good! You can trust it.
+    return verseInfos.filter((item) => item !== null).map((item) => item!);
   },
 });
 
@@ -50,11 +53,11 @@ export const search = action({
     const queryEmbedding = await fetchEmbedding(text);
     const matches = await ctx.vectorSearch("verses", "embedding", {
       vector: queryEmbedding,
-      vectorField: "embedding",
       limit: count,
     });
     const verseIds = matches.map((match) => match._id);
     const verseInfos: {
+      verseId: Id<"verses">;
       artist: string;
       title: string;
       verse: string;
@@ -63,7 +66,7 @@ export const search = action({
       verseIds,
     });
     const scoredVerses = verseInfos.map((verseInfo, index) => {
-      return { ...verseInfo, score: matches[index].score };
+      return { ...verseInfo, score: matches[index]._score };
     });
     return scoredVerses;
   },
