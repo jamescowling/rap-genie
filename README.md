@@ -3,9 +3,17 @@
 Rap Genie is a semantic search engine for rap verses, built on [Convex vector
 search](https://convex.dev). It's hosted at https://rapgenie.net.
 
-Want to find a verse about `TODO: search query`? Rap Genie has got your back:
+Want to find a verse about `motorcycles`? Rap Genie has got your back:
 
-> TODO: song lyrics here
+> Ninja! (Ninja!) Kawasaki! (Kawasaki!)  
+> Ducati! (Ducati!) My old Harley (My old Harley!)  
+> Rock the party! (Rock the party)  
+> Move your body! (Move your body)  
+> Wassup? (Wassup?) Everybody! (Everybody!)
+
+This would have been better if it mentioned Triumph but maybe I'm biased. Anyway
+the word "motorcycle" doesn't show up in the verse but it's clearly about
+motorcycles - Rap Genie still finds it.
 
 Rap Genie uses OpenAI to generate an embedding for each verse and each search
 query. The song/verse database is stored in Convex and Convex vector search is
