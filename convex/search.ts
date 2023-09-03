@@ -52,10 +52,14 @@ export const search = action({
   handler: async (ctx, { text, count }) => {
     console.log(`Searching for "${text}"`);
     const queryEmbedding = await fetchEmbedding(text);
+    const startTime = Date.now();
     const matches = await ctx.vectorSearch("verses", "embedding", {
       vector: queryEmbedding,
       limit: count,
     });
+    console.log(
+      `Found ${matches.length} matches in ${Date.now() - startTime} ms`
+    );
     const verseIds = matches.map((match) => match._id);
     const verseInfos: {
       verseId: Id<"verses">;
