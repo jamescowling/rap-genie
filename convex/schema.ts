@@ -11,10 +11,10 @@ export default defineSchema({
     features: v.string(),
     geniusViews: v.int64(),
     geniusId: v.int64(), // id
-    processed: v.boolean(), // whether verses (and other things?) have been extracted
+    processed: v.boolean(), // whether verses have been extracted
   })
     .index("processed", ["processed", "geniusViews"]) // used to find songs to process
-    .index("geniusId", ["geniusId"]), // used for uniqueness on loading
+    .index("geniusId", ["geniusId"]), // used for uniqueness on insert
 
   verses: defineTable({
     songId: v.id("songs"),

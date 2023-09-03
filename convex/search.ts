@@ -50,6 +50,7 @@ export const search = action({
     count: v.float64(),
   },
   handler: async (ctx, { text, count }) => {
+    console.log(`Searching for "${text}"`);
     const queryEmbedding = await fetchEmbedding(text);
     const matches = await ctx.vectorSearch("verses", "embedding", {
       vector: queryEmbedding,

@@ -1,7 +1,8 @@
 // Utilities for talking to OpenAI.
 
 // Fetch a batch of embeddings from OpenAI.
-export async function fetchEmbeddingBatch(text: string[]) {
+export async function fetchEmbeddingBatch(inputs: string[]) {
+  const startTime = Date.now();
   const result = await fetch("https://api.openai.com/v1/embeddings", {
     method: "POST",
     headers: {
@@ -11,10 +12,15 @@ export async function fetchEmbeddingBatch(text: string[]) {
 
     body: JSON.stringify({
       model: "text-embedding-ada-002",
-      input: text,
+      input: inputs,
     }),
   });
   const jsonresults = await result.json();
+  console.log(
+    `OpenAI fetch of ${inputs.length} embeddings took ${
+      Date.now() - startTime
+    } ms`
+  );
   const allembeddings = jsonresults.data as {
     embedding: number[];
     index: number;
@@ -23,6 +29,6 @@ export async function fetchEmbeddingBatch(text: string[]) {
   return allembeddings.map(({ embedding }) => embedding);
 }
 
-export async function fetchEmbedding(text: string) {
-  return (await fetchEmbeddingBatch([text]))[0];
+export async function fetchEmbedding(input: string) {
+  return (await fetchEmbeddingBatch([input]))[0];
 }

@@ -35,6 +35,7 @@ export const addBatch = mutation({
         }
       })
     );
+    console.log(`Added ${batch.length} songs`);
   },
 });
 
@@ -118,7 +119,7 @@ export const storeProcessedBatch = internalMutation({
 // embeddings.
 //
 // Suggested args:
-//  limit: 50
+//  limit: 20
 //  recursive: true
 //  minViews: 100000n
 export const processSongBatch = internalAction({
@@ -135,7 +136,7 @@ export const processSongBatch = internalAction({
     });
 
     if (!batch.length) {
-      console.log("no more songs to process");
+      console.log("No more songs to process");
       return;
     }
 
@@ -162,9 +163,10 @@ export const processSongBatch = internalAction({
     await ctx.runMutation(internal.songs.storeProcessedBatch, {
       batch: songsWithVerses,
     });
-    console.log("processed", batch.length, "songs");
+    console.log(`Processed ${batch.length} songs`);
 
-    if (args.recursive && batch.length === args.limit) {
+    if (args.recursive) {
+      console.log("Scheduling another batch");
       await ctx.scheduler.runAfter(0, internal.songs.processSongBatch, args);
     }
   },
@@ -192,7 +194,9 @@ export const unprocessSongBatch = internalMutation({
       .withIndex("processed", (q) => q.eq("processed", true))
       .take(limit);
     await Promise.all(songBatch.map((song) => unprocessSong(ctx.db, song._id)));
+    console.log(`Unprocessed ${songBatch.length} songs`);
     if (recursive && songBatch.length === limit) {
+      console.log("Scheduling another batch");
       await ctx.scheduler.runAfter(0, internal.songs.unprocessSongBatch, {
         limit,
         recursive,
@@ -208,7 +212,9 @@ export const clearAll = internalMutation({
     const songBatch = await ctx.db.query("songs").take(limit);
     await Promise.all(songBatch.map((song) => unprocessSong(ctx.db, song._id)));
     await Promise.all(songBatch.map((song) => ctx.db.delete(song._id)));
+    console.log(`Deleted ${songBatch.length} songs`);
     if (songBatch.length === limit) {
+      console.log("Scheduling another batch");
       await ctx.scheduler.runAfter(0, internal.songs.clearAll, {});
     }
   },
