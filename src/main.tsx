@@ -4,7 +4,10 @@ import App from "./App.tsx";
 import "./index.css";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const convex = new ConvexReactClient(
+  import.meta.env.VITE_CUSTOM_DOMAIN_CONVEX_URL ??
+    import.meta.env.VITE_CONVEX_URL
+);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
