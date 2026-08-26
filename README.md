@@ -15,8 +15,9 @@ This would have been better if it mentioned Triumph but maybe I'm biased. Anyway
 the word "motorcycle" doesn't show up in the verse but it's clearly about
 motorcycles - Rap Genie still finds it.
 
-Rap Genie uses OpenAI to generate an embedding for each verse and each search
-query. The song/verse database is stored in Convex and Convex vector search is
+Rap Genie uses the Convex AI gateway to generate an OpenAI embedding for each
+verse and each search query, authenticated with the deployment's own service
+token — no API key to set. The song/verse database is stored in Convex and Convex vector search is
 used to obtain the embeddings that have the closest cosine similarity to a given
 search query.
 

@@ -1,23 +1,38 @@
-// Utilities for talking to OpenAI.
+// Utilities for fetching embeddings through the Convex AI gateway.
+//
+// The gateway authenticates with the deployment's own service token, so no
+// OPENAI_API_KEY is needed. Same model as before (text-embedding-ada-002,
+// 1536 dimensions), so every stored vector stays valid.
 
-// Fetch a batch of embeddings from OpenAI.
+import { getServiceToken } from "convex/server";
+
+const GATEWAY_HOST =
+  process.env.CONVEX_INTERNAL_AI_GATEWAY_HOST || "https://ai-gateway.convex.dev";
+
+// Fetch a batch of embeddings.
 export async function fetchEmbeddingBatch(inputs: string[]) {
   const startTime = Date.now();
-  const result = await fetch("https://api.openai.com/v1/embeddings", {
+  const token = await getServiceToken("ai-gateway");
+  const result = await fetch(`${GATEWAY_HOST}/v1/embeddings`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + process.env.OPENAI_API_KEY,
+      Authorization: "Bearer " + token,
     },
 
     body: JSON.stringify({
-      model: "text-embedding-ada-002",
+      model: "openai/text-embedding-ada-002",
       input: inputs,
     }),
   });
+  if (!result.ok) {
+    throw new Error(
+      `Embedding fetch failed with ${result.status}: ${await result.text()}`,
+    );
+  }
   const jsonresults = await result.json();
   console.log(
-    `OpenAI fetch of ${inputs.length} embeddings took ${
+    `Gateway fetch of ${inputs.length} embeddings took ${
       Date.now() - startTime
     } ms`
   );
