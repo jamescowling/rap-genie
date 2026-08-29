@@ -7,15 +7,11 @@
 import { embedMany } from "ai";
 import { convexGateway } from "@convex-dev/ai-sdk-provider";
 
-const embeddingModel = convexGateway.embeddingModel(
-  "openai/text-embedding-ada-002",
-);
-
 // Fetch a batch of embeddings.
 export async function fetchEmbeddingBatch(inputs: string[]) {
   const startTime = Date.now();
   const { embeddings } = await embedMany({
-    model: embeddingModel,
+    model: convexGateway.embeddingModel("openai/text-embedding-ada-002"),
     values: inputs,
   });
   console.log(
