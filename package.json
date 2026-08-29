@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@convex-dev/ai-sdk-provider": "0.2.0-alpha.0",
     "@headlessui/react": "2.2.0",
     "@heroicons/react": "2.2.0",
-    "convex": "1.19.5",
+    "ai": "^7.0.84",
+    "convex": "^1.45.0",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
