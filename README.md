@@ -17,9 +17,9 @@ motorcycles - Rap Genie still finds it.
 
 Rap Genie uses the Convex AI gateway to generate an OpenAI embedding for each
 verse and each search query, authenticated with the deployment's own service
-token — no API key to set. The song/verse database is stored in Convex and Convex vector search is
-used to obtain the embeddings that have the closest cosine similarity to a given
-search query.
+token — no API key to set. The song/verse database is stored in Convex and
+Convex vector search is used to obtain the embeddings that have the closest
+cosine similarity to a given search query.
 
 Convex is a serverless fullstack development platform that makes it easy to
 build dynamic web apps, talk to third party APIs, and run background jobs. Feel
@@ -34,6 +34,16 @@ within the included resources on a Convex Pro account.
 
 - Get familiar with [the Convex platform](https://convex.dev/start).
 - Run Convex function sync in the background with `npx convex dev`.
+- Configure the AI Gateway host in every Convex deployment that runs Rap Genie:
+
+  ```sh
+  npx convex env set CONVEX_INTERNAL_AI_GATEWAY_HOST https://staging.ai-gateway.convex.dev
+  ```
+
+  The production gateway is not yet deployed, so this directs the published
+  `@convex-dev/ai-sdk-provider@0.2.0-alpha.0` to the deployed internal gateway.
+  The provider reads `CONVEX_INTERNAL_AI_GATEWAY_HOST`; `CONVEX_AI_GATEWAY_HOST`
+  is not a supported provider setting and would have no effect.
 - Load the database via `load.py`.
 - Extract verses and generate embeddings e.g., with
   `processSongBatch({limit: 20, recursive: true, minViews: 100000n})`.
