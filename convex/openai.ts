@@ -1,9 +1,3 @@
-// Utilities for fetching embeddings through the Convex AI gateway.
-//
-// The gateway authenticates with the deployment's own service token, so no
-// OPENAI_API_KEY is needed. Same model as before (text-embedding-ada-002,
-// 1536 dimensions), so every stored vector stays valid.
-
 import { embedMany } from "ai";
 import { convexGateway } from "@convex-dev/ai-sdk-provider";
 

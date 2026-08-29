@@ -34,9 +34,6 @@ within the included resources on a Convex Pro account.
 
 - Get familiar with [the Convex platform](https://convex.dev/start).
 - Run Convex function sync in the background with `npx convex dev`.
-- Configure `CONVEX_INTERNAL_AI_GATEWAY_HOST` in each target deployment with
-  the internal gateway URL provided for that environment. The published provider
-  reads this variable; `CONVEX_AI_GATEWAY_HOST` is not a supported setting.
 - Load the database via `load.py`.
 - Extract verses and generate embeddings e.g., with
   `processSongBatch({limit: 20, recursive: true, minViews: 100000n})`.
