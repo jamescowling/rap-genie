@@ -24,10 +24,29 @@ function button(text: string) {
   return [...host.querySelectorAll("button")].find((node) => node.textContent === text)!;
 }
 
+async function submitSearch(text: string) {
+  const input = host.querySelector("input")!;
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, text);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await act(async () => button("Search").click());
+}
+
+test("restores the original landing copy and theme search", () => {
+  expect(host.textContent).toContain("Semantic verse search. Powered by Convex.");
+  expect(host.querySelector("input")?.placeholder).toBe("Enter a theme");
+  expect(host.textContent).toContain('Enter a theme like "feeling tired"');
+  expect(host.textContent).toContain("Rap Genie on GitHub");
+  expect(host.textContent).toContain("MIT Licensed. Do whatevs.");
+  expect(host.textContent).not.toContain("Find a verse for the feeling");
+  expect(host.textContent).not.toContain("A mood, a moment, a topic");
+});
+
 test("shows loading, preserves query, and renders expandable results without match percentages", async () => {
   let resolve!: (value: unknown[]) => void;
   search.mockReturnValue(new Promise((done) => { resolve = done; }));
-  await act(async () => button("missing home").click());
+  await submitSearch("missing home");
   expect(button("Searching…").disabled).toBe(true);
   expect(host.querySelector("input")?.value).toBe("missing home");
   const verse = Array.from({ length: 12 }, (_, i) => `Test lyric line ${i + 1}`).join("\n");
@@ -44,11 +63,11 @@ test("shows loading, preserves query, and renders expandable results without mat
 
 test("errors remain retryable and empty results have a useful message", async () => {
   search.mockRejectedValueOnce(new Error("unavailable"));
-  await act(async () => button("missing home").click());
+  await submitSearch("missing home");
   expect(host.querySelector('[role="alert"]')?.textContent).toContain("Please try again");
-  expect(button("Find verses").disabled).toBe(false);
+  expect(button("Search").disabled).toBe(false);
   search.mockResolvedValueOnce([]);
-  await act(async () => button("Find verses").click());
+  await act(async () => button("Search").click());
   expect(host.querySelector('[role="alert"]')).toBeNull();
   expect(host.textContent).toContain("No verses found");
 });
