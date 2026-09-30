@@ -34,7 +34,7 @@ async function submitSearch(text: string) {
 }
 
 test("restores the original landing copy and theme search", () => {
-  expect(host.textContent).toContain("Semantic verse search. Powered by Convex and OpenAI.");
+  expect(host.textContent).toContain("Semantic verse search. Powered by Convex.");
   expect(host.querySelector("input")?.placeholder).toBe("Enter a theme");
   expect(host.textContent).toContain('Enter a theme like "feeling tired"');
   expect(host.textContent).toContain("Rap Genie on GitHub");

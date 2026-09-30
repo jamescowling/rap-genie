@@ -13,8 +13,7 @@ function Header() {
       <img src={rgLogo} alt="RapGenie" className="h-52 my-8 w-auto" />
       <h3 className="mt-6 text-lg leading-8">
         Semantic verse search. Powered by{" "}
-        <a href="https://convex.dev">Convex</a> and{" "}
-        <a href="https://platform.openai.com/docs/guides/embeddings">OpenAI</a>.
+        <a href="https://convex.dev">Convex</a>.
       </h3>
     </div>
   );
