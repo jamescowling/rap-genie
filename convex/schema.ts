@@ -24,7 +24,7 @@ export default defineSchema({
     embeddingModel: v.optional(v.string()),
   })
     .index("songId", ["songId"])
-    .index("by_embeddingModel", ["embeddingModel"])
+    .index("embeddingModel", ["embeddingModel"])
     .vectorIndex("embedding", {
       vectorField: "embedding",
       dimensions: 1536,
