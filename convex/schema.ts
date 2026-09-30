@@ -20,7 +20,14 @@ export default defineSchema({
     songId: v.id("songs"),
     text: v.string(),
     embedding: v.array(v.float64()),
+    // Missing on legacy Ada rows; search only uses the current model.
+    embeddingModel: v.optional(v.string()),
   })
     .index("songId", ["songId"])
-    .vectorIndex("embedding", { vectorField: "embedding", dimensions: 1536 }),
+    .index("embeddingModel", ["embeddingModel"])
+    .vectorIndex("embedding", {
+      vectorField: "embedding",
+      dimensions: 1536,
+      filterFields: ["embeddingModel"],
+    }),
 });
