@@ -15,7 +15,7 @@ export const legacyVerseBatch = internalQuery({
     const verses = await ctx.db
       .query("verses")
       .withIndex("embeddingModel", (q) => q.eq("embeddingModel", undefined))
-      .take(16);
+      .take(128);
     return verses.map((verse) => ({ id: verse._id, text: verse.text }));
   },
 });

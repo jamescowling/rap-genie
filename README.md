@@ -52,7 +52,7 @@ After reviewing the model and cost, deploy and run one small migration batch:
 npx convex run songs:reembedVerses '{}'
 ```
 
-Then, to process the remaining legacy verses in batches of 16:
+Then, to process the remaining legacy verses in batches of 128:
 
 ```sh
 npx convex run songs:reembedVerses '{"recursive":true}'
