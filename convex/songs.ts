@@ -5,7 +5,83 @@ import { internalMutation, internalQuery, mutation } from "./_generated/server";
 import { DatabaseWriter, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import { fetchEmbeddingBatch } from "./openai";
+import { EMBEDDING_MODEL, fetchEmbeddingBatch } from "./openai";
+
+// Legacy rows have no model tag. A bounded batch makes this safe to restart.
+export const legacyVerseBatch = internalQuery({
+  args: {},
+  returns: v.array(v.object({ id: v.id("verses"), text: v.string() })),
+  handler: async (ctx) => {
+    const verses = await ctx.db
+      .query("verses")
+      .withIndex("by_embeddingModel", (q) => q.eq("embeddingModel", undefined))
+      .take(16);
+    return verses.map((verse) => ({ id: verse._id, text: verse.text }));
+  },
+});
+
+export const storeReembeddedVerses = internalMutation({
+  args: {
+    verses: v.array(
+      v.object({
+        id: v.id("verses"),
+        text: v.string(),
+        embedding: v.array(v.float64()),
+      }),
+    ),
+  },
+  returns: v.null(),
+  handler: async (ctx, { verses }) => {
+    for (const verse of verses) {
+      if (
+        verse.embedding.length !== 1536 ||
+        verse.embedding.some((n) => !Number.isFinite(n))
+      ) {
+        throw new Error("Invalid embedding");
+      }
+      const current = await ctx.db.get(verse.id);
+      if (
+        current &&
+        current.embeddingModel === undefined &&
+        current.text === verse.text
+      ) {
+        await ctx.db.patch(verse.id, {
+          embedding: verse.embedding,
+          embeddingModel: EMBEDDING_MODEL,
+        });
+      }
+    }
+    return null;
+  },
+});
+
+// Run manually after deploy. Failures stop the chain; rerunning skips completed rows.
+export const reembedVerses = internalAction({
+  args: { recursive: v.optional(v.boolean()) },
+  returns: v.null(),
+  handler: async (ctx, { recursive }) => {
+    const verses: { id: Id<"verses">; text: string }[] = await ctx.runQuery(
+      internal.songs.legacyVerseBatch,
+      {},
+    );
+    if (!verses.length) return null;
+    const embeddings = await fetchEmbeddingBatch(
+      verses.map((verse) => verse.text),
+    );
+    await ctx.runMutation(internal.songs.storeReembeddedVerses, {
+      verses: verses.map((verse, index) => ({
+        ...verse,
+        embedding: embeddings[index],
+      })),
+    });
+    if (recursive) {
+      await ctx.scheduler.runAfter(250, internal.songs.reembedVerses, {
+        recursive: true,
+      });
+    }
+    return null;
+  },
+});
 
 // Add a batch of songs.
 export const addBatch = mutation({
@@ -20,7 +96,7 @@ export const addBatch = mutation({
         features: v.string(),
         geniusViews: v.int64(),
         geniusId: v.int64(),
-      })
+      }),
     ),
   },
   handler: async (ctx, { batch }) => {
@@ -33,7 +109,7 @@ export const addBatch = mutation({
         if (!existing) {
           await ctx.db.insert("songs", { processed: false, ...song });
         }
-      })
+      }),
     );
     console.log(`Added ${batch.length} songs`);
   },
@@ -50,7 +126,7 @@ export const getUnprocessedBatch = internalQuery({
     const batch = await ctx.db
       .query("songs")
       .withIndex("processed", (q) =>
-        q.eq("processed", false).gte("geniusViews", minViews)
+        q.eq("processed", false).gte("geniusViews", minViews),
       )
       .take(limit);
     return batch.map((song) => ({
@@ -100,15 +176,18 @@ export const storeProcessedBatch = internalMutation({
             songId: v.id("songs"),
             text: v.string(),
             embedding: v.array(v.float64()),
-          })
+          }),
         ),
-      })
+      }),
     ),
   },
   handler: async (ctx, { batch }) => {
     for (const song of batch) {
       for (const verse of song.verses) {
-        await ctx.db.insert("verses", verse);
+        await ctx.db.insert("verses", {
+          ...verse,
+          embeddingModel: EMBEDDING_MODEL,
+        });
       }
       await ctx.db.patch(song.songId, { processed: true });
     }
@@ -145,7 +224,7 @@ export const processSongBatch = internalAction({
       splitSong(song.lyrics).map((verse) => ({
         songId: song.id,
         text: verse,
-      }))
+      })),
     );
     const embeddings = await fetchEmbeddingBatch(verses.map((v) => v.text));
 
