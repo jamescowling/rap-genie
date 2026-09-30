@@ -22,5 +22,6 @@ export default defineSchema({
     embedding: v.array(v.float64()),
   })
     .index("songId", ["songId"])
+    .searchIndex("by_text", { searchField: "text" })
     .vectorIndex("embedding", { vectorField: "embedding", dimensions: 1536 }),
 });

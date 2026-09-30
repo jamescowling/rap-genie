@@ -18,8 +18,8 @@ motorcycles - Rap Genie still finds it.
 Rap Genie uses the Convex AI gateway to generate an OpenAI embedding for each
 verse and each search query, authenticated with the deployment's own service
 token — no API key to set. The song/verse database is stored in Convex and
-Convex vector search is used to obtain the embeddings that have the closest
-cosine similarity to a given search query.
+Convex vector search supplies semantic candidates and full-text search adds keyword
+candidates. Rank fusion and optional gateway reranking select diverse results.
 
 Convex is a serverless fullstack development platform that makes it easy to
 build dynamic web apps, talk to third party APIs, and run background jobs. Feel
@@ -31,6 +31,30 @@ from Kaggle. Despite storing millions of songs the Rap Genie workload fits
 within the included resources on a Convex Pro account.
 
 ## Deployment instructions
+
+### Hybrid search
+
+Search combines up to 60 semantic and 40 keyword matches using reciprocal rank
+fusion, then removes repeated songs and identical normalized lyric passages.
+Existing Ada embeddings remain valid: no re-embedding or data migration is needed.
+Deploying the schema builds the new `verses.by_text` full-text index over existing
+verses; budget for index backfill time and additional search usage.
+
+Optional reranking is disabled by default. Set `SEARCH_RERANK_ENABLED=true` in the
+Convex deployment to evaluate gateway `openai/gpt-4o-mini` ranking of the first 30
+candidates. Each passage is capped at 1,600 characters; the request has a four-second
+timeout and no retries. Invalid output or gateway failure returns the fused order.
+The model must return a complete permutation of candidate IDs, never lyric text.
+Disable the flag to roll back reranking without rebuilding the index.
+
+If either retrieval source fails, search uses the surviving source. Returned
+`score` values are reciprocal-rank-fusion scores, not probabilities or the final
+reranking scores. The UI intentionally no longer displays a match percentage.
+
+Run `npm test`, `npm run build`, and `npx tsc --noEmit -p convex/tsconfig.json`.
+Before enabling reranking in production, compare representative topic and fragment
+queries with the flag on/off and record relevance, latency, and gateway spend.
+
 
 - Get familiar with [the Convex platform](https://convex.dev/start).
 - Run Convex function sync in the background with `npx convex dev`.
